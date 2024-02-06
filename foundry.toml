@@ -1,0 +1,11 @@
+[profile.default]
+optimizer_runs = 1_000_000
+verbosity = 1
+via_ir = true
+remappings = ["seaport-types/=lib/seaport-types/"]
+solc = "0.8.17"
+
+# Extreme Fuzzing CI Profile :P
+[profile.ci]
+fuzz_runs = 100_000
+verbosity = 4
