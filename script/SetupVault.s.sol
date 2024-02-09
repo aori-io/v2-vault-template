@@ -17,20 +17,20 @@ contract SetupVaultScript is Script {
         address deployerAddress = vm.addr(deployerPrivateKey);
         address create3FactoryAddress = vm.envAddress("CREATE3FACTORY_ADDRESS");
         address aoriProtocolAddress = vm.envAddress("AORIPROTOCOL_ADDRESS");
-        bytes32 salt = keccak256("an aori vault template - alpha-5");
+        bytes32 salt = keccak256("an aori vault v1");
 
         /*//////////////////////////////////////////////////////////////
                                     APPROVE
         //////////////////////////////////////////////////////////////*/
 
         instructions.push(Instruction({
-            to: 0x62FA33af921f620f9D04E9664b06807bB3BAD57B, // YIN
+            to: 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9, // USDT
             value: 0,
             data: abi.encodeCall(IERC20.approve, (aoriProtocolAddress, 100000 ether))
         }));
 
         instructions.push(Instruction({
-            to: 0xbEfDe6cCa7C2BF6a57Bdc2BB41567577c8935EDe, // YANG
+            to: 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8, // USDC.e
             value: 0,
             data: abi.encodeCall(IERC20.approve, (aoriProtocolAddress, 100000 ether))
         }));
