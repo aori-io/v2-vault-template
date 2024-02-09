@@ -15,7 +15,7 @@ contract AoriVault is IAoriVault, BatchExecutor {
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
 
-    address private aoriProtocol;
+    address public aoriProtocol;
 
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
