@@ -3,7 +3,7 @@ tests:
 add-new-manager:
 	forge script script/AddNewManager.s.sol:AddNewManagerScript --fork-url https://rpc.ankr.com/eth_goerli --via-ir
 setup-vault:
-	forge script script/SetupVault.s.sol:SetupVaultScript --fork-url https://1rpc.io/arb --via-ir --legacy
+	forge script script/SetupVault.s.sol:SetupVaultScript --fork-url https://rpc.ankr.com/eth --via-ir --legacy --broadcast
 approve-aori-vault:
 	forge script script/ApproveAoriVault.s.sol:ApproveAoriVaultScript --fork-url https://rpc.goerli.eth.gateway.fm --via-ir --broadcast
 approve-router:

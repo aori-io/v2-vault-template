@@ -23,17 +23,17 @@ contract SetupVaultScript is Script {
                                     APPROVE
         //////////////////////////////////////////////////////////////*/
 
-        instructions.push(Instruction({
-            to: 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9, // USDT
-            value: 0,
-            data: abi.encodeCall(IERC20.approve, (aoriProtocolAddress, 100000 ether))
-        }));
+        // instructions.push(Instruction({
+        //     to: 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9, // USDT
+        //     value: 0,
+        //     data: abi.encodeCall(IERC20.approve, (aoriProtocolAddress, 100000 ether))
+        // }));
 
-        instructions.push(Instruction({
-            to: 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8, // USDC.e
-            value: 0,
-            data: abi.encodeCall(IERC20.approve, (aoriProtocolAddress, 100000 ether))
-        }));
+        // instructions.push(Instruction({
+        //     to: 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8, // USDC.e
+        //     value: 0,
+        //     data: abi.encodeCall(IERC20.approve, (aoriProtocolAddress, 100000 ether))
+        // }));
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -55,7 +55,7 @@ contract SetupVaultScript is Script {
             .getDeployed(deployerAddress, salt);
 
         // Approve Tokens for the Aori Vault Contract to the Aori Protocol
-        IAoriVault(aoriVaultContract).execute(instructions);
+        // IAoriVault(aoriVaultContract).execute(instructions);
 
         vm.stopBroadcast();
     }

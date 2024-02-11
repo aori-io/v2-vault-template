@@ -14,8 +14,8 @@ Deployed and executed by `0xD2e31e651C5EdD8743355A9B29AeFb993880d14C`:
 
 | Network | Address |
 |---------|---------|
-| `Goerli (5)` | [0x11530084405184b1BE7CAd29c9fa0626bcDBe6A3](https://goerli.etherscan.io/address/0x11530084405184b1BE7CAd29c9fa0626bcDBe6A3) |
-| `Arbitrum (42161)` | [0x11530084405184b1BE7CAd29c9fa0626bcDBe6A3](https://arbiscan.io/address/0x11530084405184b1BE7CAd29c9fa0626bcDBe6A3) |
+| `Mainnet (1)` | [0xd5252a54ed6269491b6adf16002e20e2ebbe5ab0](https://etherscan.io/address/0xd5252a54ed6269491b6adf16002e20e2ebbe5ab0) |
+| `Goerli (5)` | [0xd5252a54ed6269491b6adf16002e20e2ebbe5ab0](https://etherscan.io/address/0xd5252a54ed6269491b6adf16002e20e2ebbe5ab0) |
 
 ## Usage
 
