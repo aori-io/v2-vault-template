@@ -2,11 +2,13 @@
 pragma solidity 0.8.17;
 
 import { IAoriVault } from "./interfaces/IAoriVault.sol";
-import { IAoriV2 } from "aori-v2-contracts/src/interfaces/IAoriV2.sol";
+import { IAoriV2 } from "../lib/aori-v2-contracts/src/interfaces/IAoriV2.sol";
 import { Instruction } from "./interfaces/IBatchExecutor.sol";
 import { BatchExecutor } from "./BatchExecutor.sol";
+import { ERC4626 } from "../lib/solmate/src/tokens/ERC4626.sol";
+import { ERC20 } from "../lib/solmate/src/tokens/ERC20.sol";
 
-contract AoriVault is IAoriVault, BatchExecutor {
+contract AoriVault is IAoriVault, BatchExecutor, ERC4626 {
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 constant internal ERC1271_MAGICVALUE = 0x1626ba7e;
@@ -23,8 +25,11 @@ contract AoriVault is IAoriVault, BatchExecutor {
 
     constructor(
         address _owner,
-        address _aoriProtocol
-    ) BatchExecutor(_owner) {
+        address _aoriProtocol,
+        ERC20 _asset,
+        string memory _name,
+        string memory _symbol
+    ) BatchExecutor(_owner) ERC4626(_asset, _name, _symbol) {
         aoriProtocol = _aoriProtocol;
     }
 
@@ -95,6 +100,10 @@ contract AoriVault is IAoriVault, BatchExecutor {
         }
 
         return 0x0;
+    }
+
+    function totalAssets() public view override returns (uint256) {
+        return asset.balanceOf(address(this));
     }
 
     /*//////////////////////////////////////////////////////////////

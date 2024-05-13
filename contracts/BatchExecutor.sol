@@ -1,6 +1,6 @@
 pragma solidity 0.8.17;
 import {IBatchExecutor, Instruction } from "./interfaces/IBatchExecutor.sol";
-import {IERC20} from "forge-std/interfaces/IERC20.sol";
+import {IERC20} from "../lib/forge-std/src/interfaces/IERC20.sol";
 
 contract BatchExecutor is IBatchExecutor {
 

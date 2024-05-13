@@ -10,3 +10,6 @@
 [submodule "lib/aori-v2-contracts"]
 	path = lib/aori-v2-contracts
 	url = https://github.com/aori-io/aori-v2-contracts
+[submodule "lib/solmate"]
+	path = lib/solmate
+	url = https://github.com/transmissions11/solmate

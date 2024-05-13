@@ -1,15 +1,16 @@
 pragma solidity >=0.8.17;
 
-import {DSTest} from "ds-test/test.sol";
-import {console} from "forge-std/console.sol";
-import {Vm} from "forge-std/Vm.sol";
-import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+import {DSTest} from "../lib/ds-test/src/test.sol";
+import {console} from "../lib/forge-std/src/console.sol";
+import {Vm} from "../lib/forge-std/src/Vm.sol";
+import { IERC20 } from "../lib/forge-std/src/interfaces/IERC20.sol";
 
 import { SimpleToken } from "./mocks/SimpleToken.sol";
 import { AoriVault } from "../contracts/AoriVault.sol";
 import { Instruction } from "../contracts/interfaces/IBatchExecutor.sol";
-import { IAoriV2 } from "aori-v2-contracts/src/interfaces/IAoriV2.sol";
-import { AoriV2 } from "aori-v2-contracts/src/AoriV2.sol";
+import { IAoriV2 } from "../lib/aori-v2-contracts/src/interfaces/IAoriV2.sol";
+import { AoriV2 } from "../lib/aori-v2-contracts/src/AoriV2.sol";
+import { ERC20 } from "../lib/solmate/src/tokens/ERC20.sol";
 
 contract AoriVaultTest is DSTest {
     Vm internal vm = Vm(HEVM_ADDRESS);
@@ -50,7 +51,7 @@ contract AoriVaultTest is DSTest {
         aoriProtocol = new AoriV2(SERVER_WALLET);
 
         vm.prank(MAKER_WALLET);
-        aoriVault = new AoriVault(MAKER_WALLET, address(aoriProtocol));
+        aoriVault = new AoriVault(MAKER_WALLET, address(aoriProtocol), ERC20(address(tokenA)), "AoriVault", "AV");
 
         vm.label(address(aoriProtocol), "Order Protocol");
         vm.label(address(aoriVault), "Order Vault");
