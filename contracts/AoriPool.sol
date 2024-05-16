@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 import { AoriVault } from "./AoriVault.sol";
 import { ERC20 } from "solady/tokens/ERC20.sol";
+import { IAoriV2 } from "aori-v2-contracts/src/interfaces/IAoriV2.sol";
 
 interface IERC20 {
     function name() external view returns (string memory);
@@ -11,7 +12,7 @@ interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
 }
 
-contract AoriExternalVault is AoriVault, ERC20 {
+contract AoriPool is AoriVault, ERC20 {
 
     address public baseToken;
     address public quoteToken;
@@ -27,11 +28,27 @@ contract AoriExternalVault is AoriVault, ERC20 {
     }
 
     function name() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("Aori Vaulted Pair: ", IERC20(baseToken).name(), " / ", IERC20(quoteToken).name()));
+        return string(abi.encodePacked("Aori Pool: ", IERC20(baseToken).name(), " / ", IERC20(quoteToken).name()));
     }
 
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("aori-v", IERC20(baseToken).symbol(), " / ", IERC20(quoteToken).symbol()));
+        return string(abi.encodePacked("ap", IERC20(baseToken).symbol(), "-", IERC20(quoteToken).symbol()));
+    }
+
+    function beforeAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) public override returns (bool) {
+        require(
+            (matching.makerOrder.inputToken == baseToken && matching.makerOrder.outputToken == quoteToken) ||
+            (matching.takerOrder.inputToken == baseToken && matching.takerOrder.outputToken == quoteToken)
+        , "Invalid trade");
+        super.beforeAoriTrade(matching, hookData);
+    }
+
+    function afterAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) public override returns (bool) {
+        require(
+            (matching.makerOrder.inputToken == baseToken && matching.makerOrder.outputToken == quoteToken) ||
+            (matching.takerOrder.inputToken == baseToken && matching.takerOrder.outputToken == quoteToken)
+        , "Invalid trade");
+        super.afterAoriTrade(matching, hookData);
     }
 
     function depositInBase(uint256 baseAmountIn, address to) public {
@@ -42,7 +59,7 @@ contract AoriExternalVault is AoriVault, ERC20 {
         IERC20(quoteToken).transferFrom(msg.sender, address(this), quoteAmountIn);
 
         // Mint shares related
-        _mint(to, totalShares() * baseAmountIn / totalInBase);
+        _mint(to, totalSupply() * baseAmountIn / totalInBase);
     }
 
     function depositInQuote(uint256 quoteAmountIn, address to) public {
@@ -53,15 +70,15 @@ contract AoriExternalVault is AoriVault, ERC20 {
         IERC20(quoteToken).transferFrom(msg.sender, address(this), quoteAmountIn);
 
         // Mint shares related
-        _mint(to, totalShares() * quoteAmountIn / totalInQuote);
+        _mint(to, totalSupply() * quoteAmountIn / totalInQuote);
     }
 
     function withdrawInBase(uint256 baseAmountOut, address to, address owner) public returns (uint256 shares) {
         (uint256 totalInBase, uint256 totalInQuote) = totalAssets();
         uint256 quoteAmountOut = (totalInQuote * baseAmountOut) / totalInBase;
 
-        uint256 shares = (totalShares() * baseAmountOut) / totalInBase; 
-        _burn(owner, shares);
+        uint256 sharesToBurn = (totalSupply() * baseAmountOut) / totalInBase; 
+        _burn(owner, sharesToBurn);
 
         IERC20(baseToken).transfer(to, baseAmountOut);
         IERC20(quoteToken).transfer(to, quoteAmountOut);
@@ -71,8 +88,8 @@ contract AoriExternalVault is AoriVault, ERC20 {
         (uint256 totalInBase, uint256 totalInQuote) = totalAssets();
         uint256 baseAmountOut = (totalInBase * quoteAmountOut) / totalInQuote;
 
-        uint256 shares = (totalShares() * quoteAmountOut) / totalInQuote;
-        _burn(owner, shares);
+        uint256 sharesToBurn = (totalSupply() * quoteAmountOut) / totalInQuote;
+        _burn(owner, sharesToBurn);
 
         IERC20(baseToken).transfer(to, baseAmountOut);
         IERC20(quoteToken).transfer(to, quoteAmountOut);
@@ -81,9 +98,5 @@ contract AoriExternalVault is AoriVault, ERC20 {
     function totalAssets() public view returns (uint256 totalInBase, uint256 totalInQuote) {
         totalInBase = IERC20(baseToken).balanceOf(address(this));
         totalInQuote = IERC20(quoteToken).balanceOf(address(this));
-    }
-
-    function totalShares() public view returns (uint256 totalShares) {
-        totalShares = totalSupply();
     }
 }

@@ -32,7 +32,7 @@ contract AoriVault is IAoriVault, BatchExecutor {
                                  HOOKS
     //////////////////////////////////////////////////////////////*/
 
-    function beforeAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) external returns (bool) {
+    function beforeAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) public virtual returns (bool) {
         if (hookData.length == 0) {
             return true;
         }
@@ -45,7 +45,7 @@ contract AoriVault is IAoriVault, BatchExecutor {
         return true;
     }
 
-    function afterAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) external returns (bool) {
+    function afterAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) public virtual returns (bool) {
         if (hookData.length == 0) {
             return true;
         }
