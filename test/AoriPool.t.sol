@@ -78,14 +78,33 @@ contract AoriPoolTest is DSTest {
                             BEFOREAORITRADE
     //////////////////////////////////////////////////////////////*/
 
-    function testBeforeAoriTrade_failNotOwner() public {
+    function testBeforeAoriTrade_failInvalidTrade() public {
         IAoriV2.MatchingDetails memory matching;
 
         vm.startPrank(FAKE_MAKER_WALLET);
-        vm.expectRevert("Only a manager can force the execution of this trade");
+        vm.expectRevert("Invalid trade");
         aoriPool.beforeAoriTrade(matching, "0x3");
         vm.stopPrank();
     }
 
-    // TODO: 
+    /*//////////////////////////////////////////////////////////////
+                             AFTERAORITRADE
+    //////////////////////////////////////////////////////////////*/
+
+    function testAfterAoriTrade_failInvalidOrder() public {
+        IAoriV2.MatchingDetails memory matching;
+
+        vm.startPrank(FAKE_MAKER_WALLET);
+        vm.expectRevert("Invalid trade");
+        aoriPool.afterAoriTrade(matching, "0x3");
+        vm.stopPrank();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                                  HOOK
+    //////////////////////////////////////////////////////////////*/
+
+    function testHook_success() public {
+
+    }
 }
