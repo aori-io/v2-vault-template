@@ -33,12 +33,13 @@ contract AoriVault is IAoriVault, BatchExecutor {
     //////////////////////////////////////////////////////////////*/
 
     function beforeAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) public virtual returns (bool) {
+       
+        require(managers[tx.origin], "Only a manager can force the execution of this trade");
+        require(msg.sender == aoriProtocol, "Only aoriProtocol can interact with this contract");
+
         if (hookData.length == 0) {
             return true;
         }
-
-        require(managers[tx.origin], "Only a manager can force the execution of this trade");
-        require(msg.sender == aoriProtocol, "Only aoriProtocol can interact with this contract");
 
         (Instruction[] memory preSwapInstructions,) = abi.decode(hookData, (Instruction[], Instruction[]));
         _execute(preSwapInstructions);
@@ -46,12 +47,13 @@ contract AoriVault is IAoriVault, BatchExecutor {
     }
 
     function afterAoriTrade(IAoriV2.MatchingDetails calldata matching, bytes calldata hookData) public virtual returns (bool) {
-        if (hookData.length == 0) {
-            return true;
-        }
 
         require(managers[tx.origin], "Only a manager can force the execution of this trade");
         require(msg.sender == aoriProtocol, "Only aoriProtocol can trade");
+
+        if (hookData.length == 0) {
+            return true;
+        }
 
         (, Instruction[] memory postSwapInstructions) = abi.decode(hookData, (Instruction[], Instruction[]));
         _execute(postSwapInstructions);
