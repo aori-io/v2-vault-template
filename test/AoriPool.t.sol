@@ -105,6 +105,97 @@ contract AoriPoolTest is DSTest {
     //////////////////////////////////////////////////////////////*/
 
     function testHook_success() public {
+        IAoriV2.Order memory makerOrder = IAoriV2.Order({
+            offerer: MAKER_WALLET,
+            inputToken: address(tokenA),
+            inputAmount: 1,
+            inputChainId: 1,
+            inputZone: address(aoriProtocol),
+            outputToken: address(tokenB),
+            outputAmount: 1,
+            outputChainId: 1,
+            outputZone: address(aoriProtocol),
+            startTime: block.timestamp - 10,
+            endTime: block.timestamp + 10,
+            salt: 0,
+            counter: 0,
+            toWithdraw: false
+        });
 
+        (uint8 makerV, bytes32 makerR, bytes32 makerS) = vm.sign(
+            MAKER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getOrderHash(makerOrder)
+                )
+            )
+        );
+
+        IAoriV2.Order memory takerOrder = IAoriV2.Order({
+            offerer: TAKER_WALLET,
+            inputToken: address(tokenB),
+            inputAmount: 1,
+            inputChainId: 1,
+            inputZone: address(aoriProtocol),
+            outputToken: address(tokenA),
+            outputAmount: 1,
+            outputChainId: 1,
+            outputZone: address(aoriProtocol),
+            startTime: block.timestamp - 10,
+            endTime: block.timestamp + 10,
+            salt: 0,
+            counter: 0,
+            toWithdraw: false
+        });
+
+        (uint8 takerV, bytes32 takerR, bytes32 takerS) = vm.sign(
+            TAKER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getOrderHash(takerOrder)
+                )
+            )
+        );
+
+        IAoriV2.MatchingDetails memory matching = IAoriV2.MatchingDetails({
+            makerOrder: makerOrder,
+            takerOrder: takerOrder,
+            makerSignature: abi.encodePacked(makerR, makerS, makerV),
+            takerSignature: abi.encodePacked(takerR, takerS, takerV),
+            blockDeadline: block.number + 100,
+            seatNumber: 0,
+            seatHolder: address(SERVER_WALLET),
+            seatPercentOfFees: 0
+        });
+
+        (uint8 serverV, bytes32 serverR, bytes32 serverS) = vm.sign(
+            SERVER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getMatchingHash(matching)
+                )
+            )
+        );
+
+        vm.startPrank(TAKER_WALLET);
+        tokenA.mint(1 ether);
+        tokenA.approve(address(aoriProtocol), 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(TAKER_WALLET);
+        tokenB.mint(1 ether);
+        tokenB.approve(address(aoriProtocol), 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(MAKER_WALLET, MAKER_WALLET);
+        aoriProtocol.settleOrders(
+            matching,
+            abi.encodePacked(serverR, serverS, serverV),
+            abi.encode(preSwapInstructions, postSwapInstructions),
+            "");
+        vm.stopPrank();
     }
 }
