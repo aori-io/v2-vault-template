@@ -70,6 +70,7 @@ contract AoriPoolTest is DSTest {
 
         vm.label(address(tokenA), "TokenA");
         vm.label(address(tokenB), "TokenB");
+        vm.label(address(tokenC), "TokenC");
 
         vm.deal(MAKER_WALLET, 100 ether);
     }
@@ -104,9 +105,179 @@ contract AoriPoolTest is DSTest {
                                   HOOK
     //////////////////////////////////////////////////////////////*/
 
-    function testHook_success() public {
+    function testHook_failInvalidOrder() public {
         IAoriV2.Order memory makerOrder = IAoriV2.Order({
             offerer: MAKER_WALLET,
+            inputToken: address(tokenB),
+            inputAmount: 0,
+            inputChainId: 1,
+            inputZone: address(aoriProtocol),
+            outputToken: address(tokenC),
+            outputAmount: 0,
+            outputChainId: 1,
+            outputZone: address(aoriProtocol),
+            startTime: block.timestamp - 10,
+            endTime: block.timestamp + 10,
+            salt: 0,
+            counter: 0,
+            toWithdraw: false
+        });
+
+        (uint8 makerV, bytes32 makerR, bytes32 makerS) = vm.sign(
+            MAKER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getOrderHash(makerOrder)
+                )
+            )
+        );
+
+        IAoriV2.Order memory takerOrder = IAoriV2.Order({
+            offerer: TAKER_WALLET,
+            inputToken: address(tokenC),
+            inputAmount: 0,
+            inputChainId: 1,
+            inputZone: address(aoriProtocol),
+            outputToken: address(tokenB),
+            outputAmount: 0,
+            outputChainId: 1,
+            outputZone: address(aoriProtocol),
+            startTime: block.timestamp - 10,
+            endTime: block.timestamp + 10,
+            salt: 0,
+            counter: 0,
+            toWithdraw: false
+        });
+
+        (uint8 takerV, bytes32 takerR, bytes32 takerS) = vm.sign(
+            TAKER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getOrderHash(takerOrder)
+                )
+            )
+        );
+
+        IAoriV2.MatchingDetails memory matching = IAoriV2.MatchingDetails({
+            makerOrder: makerOrder,
+            takerOrder: takerOrder,
+            makerSignature: abi.encodePacked(makerR, makerS, makerV),
+            takerSignature: abi.encodePacked(takerR, takerS, takerV),
+            blockDeadline: block.number + 100,
+            seatNumber: 0,
+            seatHolder: address(SERVER_WALLET),
+            seatPercentOfFees: 0
+        });
+
+        (uint8 serverV, bytes32 serverR, bytes32 serverS) = vm.sign(
+            SERVER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getMatchingHash(matching)
+                )
+            )
+        );
+
+        vm.startPrank(TAKER_WALLET);
+        aoriProtocol.settleOrders(
+            matching,
+            abi.encodePacked(serverR, serverS, serverV),
+            abi.encode(preSwapInstructions, postSwapInstructions),
+            "");
+        vm.stopPrank();
+    }
+
+    function testHook_successNoData() public {
+        IAoriV2.Order memory makerOrder = IAoriV2.Order({
+            offerer: MAKER_WALLET,
+            inputToken: address(tokenA),
+            inputAmount: 0,
+            inputChainId: 1,
+            inputZone: address(aoriProtocol),
+            outputToken: address(tokenB),
+            outputAmount: 0,
+            outputChainId: 1,
+            outputZone: address(aoriProtocol),
+            startTime: block.timestamp - 10,
+            endTime: block.timestamp + 10,
+            salt: 0,
+            counter: 0,
+            toWithdraw: false
+        });
+
+        (uint8 makerV, bytes32 makerR, bytes32 makerS) = vm.sign(
+            MAKER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getOrderHash(makerOrder)
+                )
+            )
+        );
+
+        IAoriV2.Order memory takerOrder = IAoriV2.Order({
+            offerer: TAKER_WALLET,
+            inputToken: address(tokenB),
+            inputAmount: 0,
+            inputChainId: 1,
+            inputZone: address(aoriProtocol),
+            outputToken: address(tokenA),
+            outputAmount: 0,
+            outputChainId: 1,
+            outputZone: address(aoriProtocol),
+            startTime: block.timestamp - 10,
+            endTime: block.timestamp + 10,
+            salt: 0,
+            counter: 0,
+            toWithdraw: false
+        });
+
+        (uint8 takerV, bytes32 takerR, bytes32 takerS) = vm.sign(
+            TAKER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getOrderHash(takerOrder)
+                )
+            )
+        );
+
+        IAoriV2.MatchingDetails memory matching = IAoriV2.MatchingDetails({
+            makerOrder: makerOrder,
+            takerOrder: takerOrder,
+            makerSignature: abi.encodePacked(makerR, makerS, makerV),
+            takerSignature: abi.encodePacked(takerR, takerS, takerV),
+            blockDeadline: block.number + 100,
+            seatNumber: 0,
+            seatHolder: address(SERVER_WALLET),
+            seatPercentOfFees: 0
+        });
+
+        (uint8 serverV, bytes32 serverR, bytes32 serverS) = vm.sign(
+            SERVER_PRIVATE_KEY,
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    aoriProtocol.getMatchingHash(matching)
+                )
+            )
+        );
+
+        vm.startPrank(TAKER_WALLET);
+        aoriProtocol.settleOrders(
+            matching,
+            abi.encodePacked(serverR, serverS, serverV),
+            abi.encode(preSwapInstructions, postSwapInstructions),
+            "");
+        vm.stopPrank();
+    }
+
+    function testHook_successNoDataWithAssets() public {
+        IAoriV2.Order memory makerOrder = IAoriV2.Order({
+            offerer: address(aoriPool),
             inputToken: address(tokenA),
             inputAmount: 1,
             inputChainId: 1,
@@ -180,7 +351,7 @@ contract AoriPoolTest is DSTest {
             )
         );
 
-        vm.startPrank(TAKER_WALLET);
+        vm.startPrank(address(aoriPool));
         tokenA.mint(1 ether);
         tokenA.approve(address(aoriProtocol), 1 ether);
         vm.stopPrank();
@@ -198,4 +369,44 @@ contract AoriPoolTest is DSTest {
             "");
         vm.stopPrank();
     }
+
+    /*//////////////////////////////////////////////////////////////
+                             DEPOSITINBASE
+    //////////////////////////////////////////////////////////////*/
+
+    function testDepositInBase_failNoBaseToken() public {
+    }
+
+    function testDepositInBase_failNoQuoteToken() public {
+    }
+
+    function testDepositInBase_failMintFailed() public {
+    }
+
+    function testDepositInBase_success() public {
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                             DEPOSITINQUOTE
+    //////////////////////////////////////////////////////////////*/
+
+    function testDepositInQuote_failNoBaseToken() public {
+    }
+
+    function testDepositInQuote_failNoQuoteToken() public {
+    }
+
+    function testDepositInQuote_failMintFailed() public {
+    }
+
+    function testDepositInQuote_success() public {
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                             WITHDRAWINBASE
+    //////////////////////////////////////////////////////////////*/
+
+    /*//////////////////////////////////////////////////////////////
+                            WITHDRAWINQUOTE
+    //////////////////////////////////////////////////////////////*/
 }
