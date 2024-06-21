@@ -6,10 +6,16 @@ import { IAoriV2 } from "aori-v2-contracts/src/interfaces/IAoriV2.sol";
 import { Instruction } from "./interfaces/IBatchExecutor.sol";
 import { BatchExecutor } from "./BatchExecutor.sol";
 
-contract AoriVault is IAoriVault, BatchExecutor {
+interface IBlast {
+  function configureClaimableGas() external;
+  function configureGovernor(address governor) external;
+}
+
+contract AoriVaultBlast is IAoriVault, BatchExecutor {
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 constant internal ERC1271_MAGICVALUE = 0x1626ba7e;
+    IBlast public constant BLAST = IBlast(0x4300000000000000000000000000000000000002);
     
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -26,6 +32,9 @@ contract AoriVault is IAoriVault, BatchExecutor {
         address _aoriProtocol
     ) BatchExecutor(_owner) {
         aoriProtocol = _aoriProtocol;
+
+        BLAST.configureClaimableGas();
+        BLAST.configureGovernor(_owner);
     }
 
     /*//////////////////////////////////////////////////////////////
